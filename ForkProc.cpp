@@ -3,6 +3,11 @@
 #include <tchar.h>
 #include "ForkProc.h"
 
+/*
+Credit goes to D4stiny's ForkPlayground, a POC on process forking.
+Blog Post explaining the process: https://billdemirkapi.me/abusing-windows-implementation-of-fork-for-stealthy-memory-operations/
+*/
+
 ForkProcess::ForkProcess(HANDLE hProcess) {
 	this->ProcessHandle = hProcess;
 	this->ForkedChildProcHandle = NULL;
@@ -22,9 +27,41 @@ ForkProcess::~ForkProcess(VOID) {
 	}
 }
 
-HANDLE ForkProcess::Fork() {
+HANDLE ForkProcess::Fork(VOID) {
+
+	NTSTATUS status;
+
+	if (this->ForkedChildProcHandle != NULL) {
+		if (!this->CleanFork()) {
+			printError(TEXT("CleanFork() "));
+		}
+	}
 	
-	this->ForkedChildProcHandle = NtCreateProcessEx();
+	status = NtCreateProcessEx(&this->ForkedChildProcHandle, PROCESS_ALL_ACCESS, NULL, this->ProcessHandle, 0, NULL, NULL, NULL, 0);
+	
+	if (NT_SUCCESS(status) == FALSE) {
+		printError(TEXT("NtCreateProcessEx "));
+		return NULL;
+	}
+
+	return this->ForkedChildProcHandle;
+
+}
+
+BOOL ForkProcess::CleanFork(VOID) {
+
+	BOOL successFlag;
+	successFlag = TRUE;
+
+	if (this->ForkedChildProcHandle) {
+		successFlag = TerminateProcess(this->ForkedChildProcHandle, 0);
+		CloseHandle(this->ForkedChildProcHandle);
+		if (!successFlag) {
+			printError(TEXT("TerminateProcess "));
+		}
+		this->ForkedChildProcHandle = NULL;
+	}
+	return successFlag;
 }
 
 

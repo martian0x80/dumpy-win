@@ -4,7 +4,7 @@
 #include <Psapi.h>
 #include <iostream>
 #include "ForkProc.h"
-
+//#pragma comment(lib, "ForkProcess.dll")
 void printError(const TCHAR* msg);
 
 

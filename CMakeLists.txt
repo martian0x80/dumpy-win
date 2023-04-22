@@ -10,9 +10,10 @@ if (POLICY CMP0141)
 endif()
 
 project ("dumpy")
+#add_library(ForkProcess STATIC "ForkProc.cpp" "ForkProc.h")
 
 # Add source to this project's executable.
-add_executable (dumpy "dumpy.cpp" "dumpy.h" "RawPhysicalDump.cpp" "ProcessDump.cpp")
+add_executable (dumpy "dumpy.cpp" "dumpy.h" "RawPhysicalDump.cpp" "ProcessDump.cpp" "ForkProc.cpp" "ForkProc.h")
 
 if (CMAKE_VERSION VERSION_GREATER 3.12)
   set_property(TARGET dumpy PROPERTY CXX_STANDARD 20)
